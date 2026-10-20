@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Inversiones - Portafolio Ejecutivo</title>
+    <!-- Chart.js para gráficos y Tailwind CSS para diseño -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 p-2 rounded-lg font-bold text-xl">📈</div>
+                <div>
+                    <h1 class="text-xl font-bold">Mi Portafolio Financiero</h1>
+                    <p class="text-xs text-slate-400">Actualización diaria automática • Cocos Capital & Cripto</p>
+                </div>
+            </div>
+            <div class="text-right mt-2 sm:mt-0">
+                <span class="text-xs text-slate-400 block">Patrimonio Estimado</span>
+                <span id="total-portfolio" class="text-2xl font-bold text-emerald-400">$441.567 ARS</span>
+            </div>
+        </div>
+
+        <!-- Pestañas de Navegación -->
+        <nav class="max-w-7xl mx-auto px-4 flex space-x-6 border-t border-slate-700/50 pt-2 text-sm">
+            <button onclick="openTab('cartera')" id="btn-cartera" class="tab-btn pb-3 border-b-2 border-blue-500 font-semibold text-blue-400 flex items-center space-x-2">
+                <span>📊</span> <span>Mi Cartera en Vivo</span>
+            </button>
+            <button onclick="openTab('eventos')" id="btn-eventos" class="tab-btn pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+                <span>🌐</span> <span>Radar Macro & Eventos</span>
+            </button>
+            <button onclick="openTab('rebalanceo')" id="btn-rebalanceo" class="tab-btn pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+                <span>⚡</span> <span>Oportunidades & Rebalanceo</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
+
+        <!-- PESTAÑA 1: CARTERA EN VIVO -->
+        <section id="tab-cartera" class="tab-content active space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Gráfico de Torta -->
+                <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 md:col-span-1 flex flex-col items-center">
+                    <h2 class="text-base font-semibold mb-4 self-start">Distribución del Patrimonio</h2>
+                    <div class="w-full max-w-[260px] h-[260px]">
+                        <canvas id="portfolioChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tabla de Posiciones -->
+                <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 md:col-span-2 overflow-x-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-base font-semibold">Detalle de Activos</h2>
+                        <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full">● Mercado Abierto</span>
+                    </div>
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="text-xs uppercase bg-slate-900/60 text-slate-400 border-b border-slate-700">
+                            <tr>
+                                <th class="py-3 px-3">Activo</th>
+                                <th class="py-3 px-3">Rol / Sector</th>
+                                <th class="py-3 px-3 text-right">Monto (ARS)</th>
+                                <th class="py-3 px-3 text-right">Peso Actual</th>
+                                <th class="py-3 px-3 text-right">Variación Diaria</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assets-table-body" class="divide-y divide-slate-700/50">
+                            <!-- Inyectado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 2: RADAR DE EVENTOS MACRO -->
+        <section id="tab-eventos" class="tab-content space-y-6">
+            <div class="bg-slate-800 p-5 rounded-xl border border-slate-700">
+                <h2 class="text-lg font-bold mb-1">Impacto de Eventos Internacionales y Locales</h2>
+                <p class="text-sm text-slate-400 mb-6">Monitoreo día a día de drivers clave que afectan tus CEDEARs, acciones y cripto.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="events-container">
+                    <!-- Evento 1 -->
+                    <div class="p-4 rounded-lg bg-slate-900 border border-slate-700 space-y-2">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">Internacional • AAPL</span>
+                            <span class="text-xs text-slate-400">Próximos días</span>
+                        </div>
+                        <h3 class="font-bold text-base text-slate-100">Reporte de Balances Q4 de Apple</h3>
+                        <p class="text-xs text-slate-300">Se esperan ingresos por USD 113.380M (+10.6% i.a.). Wall Street evaluará la tracción inicial del iPhone 18 y el segmento de Servicios.</p>
+                        <div class="text-xs text-emerald-400 font-medium">Impacto esperado: Moderado / Positivo en tu 12,25% de AAPL.</div>
+                    </div>
+
+                    <!-- Evento 2 -->
+                    <div class="p-4 rounded-lg bg-slate-900 border border-slate-700 space-y-2">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">Internacional • S&P 500</span>
+                            <span class="text-xs text-slate-400">En curso</span>
+                        </div>
+                        <h3 class="font-bold text-base text-slate-100">Temporada de Balances Q3 S&P 500</h3>
+                        <p class="text-xs text-slate-300">Las empresas del índice proyectan crecimiento de ganancias de +24% i.a. Impulsado por grandes tecnológicas y el sector energético.</p>
+                        <div class="text-xs text-emerald-400 font-medium">Impacto esperado: Altamente Positivo para tu ancla principal en SPY (42,36%).</div>
+                    </div>
+
+                    <!-- Evento 3 -->
+                    <div class="p-4 rounded-lg bg-slate-900 border border-slate-700 space-y-2">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Nacional • YPF</span>
+                            <span class="text-xs text-slate-400">Monitoreo continuo</span>
+                        </div>
+                        <h3 class="font-bold text-base text-slate-100">Producción de Vaca Muerta y CCL</h3>
+                        <p class="text-xs text-slate-300">Nuevos récords de evacuación de crudo sostienen la valuación de YPFD en la bolsa local, contrarrestando la volatilidad del tipo de cambio financiero.</p>
+                        <div class="text-xs text-amber-400 font-medium">Impacto esperado: Neutro / Positivo de mediano plazo.</div>
+                    </div>
+
+                    <!-- Evento 4 -->
+                    <div class="p-4 rounded-lg bg-slate-900 border border-slate-700 space-y-2">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">Crypto • Bitcoin</span>
+                            <span class="text-xs text-slate-400">Semanales</span>
+                        </div>
+                        <h3 class="font-bold text-base text-slate-100">Flujos de Entrada en ETFs de Bitcoin</h3>
+                        <p class="text-xs text-slate-300">La adopción institucional mediante ETFs mantiene el piso de precio sobre los USD 65.000, permitiendo la descorrelación con activos tradicionales.</p>
+                        <div class="text-xs text-slate-400 font-medium">Impacto esperado: Cobertura asimétrica (7,93% en cartera).</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 3: REBALANCEO Y OPORTUNIDADES -->
+        <section id="tab-rebalanceo" class="tab-content space-y-6">
+            <div class="bg-slate-800 p-5 rounded-xl border border-slate-700">
+                <h2 class="text-lg font-bold mb-1">Diagnóstico & Motor de Rebalanceo Sugerido</h2>
+                <p class="text-sm text-slate-400 mb-6">El sistema calcula desvíos respecto a tus metas tácticas e identifica compras o ventas oportunas.</p>
+
+                <div class="space-y-4">
+                    <!-- Sugerencia 1 -->
+                    <div class="p-4 rounded-lg bg-slate-900/80 border-l-4 border-emerald-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div>
+                            <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">🎯 Estado Óptimo</span>
+                            <h3 class="font-bold text-slate-100 text-sm">S&P 500 (SPY) - Ancla del Portafolio</h3>
+                            <p class="text-xs text-slate-400">Participación actual: 42,36%. Se encuentra alineado con la banda objetivo del 42% - 45%.</p>
+                        </div>
+                        <span class="text-xs bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 font-medium whitespace-nowrap">Mantener sin cambios</span>
+                    </div>
+
+                    <!-- Sugerencia 2 -->
+                    <div class="p-4 rounded-lg bg-slate-900/80 border-l-4 border-amber-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div>
+                            <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">⚠️ Atención por compra entera</span>
+                            <h3 class="font-bold text-slate-100 text-sm">Apple (AAPL) - CEDEAR</h3>
+                            <p class="text-xs text-slate-400">Participación actual: 12,25%. Supera ligeramente el techo del 10% por la compra de 1 nominal entero adicional (~$27.200 ARS).</p>
+                        </div>
+                        <span class="text-xs bg-amber-500/10 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap">Pausar compras futuras</span>
+                    </div>
+
+                    <!-- Sugerencia 3 -->
+                    <div class="p-4 rounded-lg bg-slate-900/80 border-l-4 border-blue-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div>
+                            <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">📉 Dilución Gradual Objetivada</span>
+                            <h3 class="font-bold text-slate-100 text-sm">Bitcoin (BTC)</h3>
+                            <p class="text-xs text-slate-400">Participación actual: 7,93% (bajó desde el 10,25%). Con los próximos aportes en pesos, se diluirá de forma natural hacia la zona meta del 5% - 6%.</p>
+                        </div>
+                        <span class="text-xs bg-blue-500/10 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap">Sin venta forzada</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 border-t border-slate-700 text-center py-4 text-xs text-slate-500">
+        Panel Personal de Inversiones • Datos vía Google Finance / CoinGecko API • Generado para gestión patrimonial.
+    </footer>
+
+    <!-- Lógica JavaScript -->
+    <script>
+        // Datos del Portafolio Actualizado
+        const portfolioData = [
+            { ticker: 'SPY', name: 'S&P 500 ETF', role: 'Renta Variable (Núcleo)', value: 187060, change: '+0.85%', color: '#3b82f6' },
+            { ticker: 'MELI', name: 'Mercado Libre', role: 'Growth Regional', value: 72990, change: '+1.40%', color: '#eab308' },
+            { ticker: 'AAPL', name: 'Apple Inc.', role: 'Tech / Hardware', value: 54100, change: '+0.30%', color: '#a855f7' },
+            { ticker: 'YPFD', name: 'YPF S.A.', role: 'Energía Vaca Muerta', value: 36540, change: '-0.50%', color: '#ef4444' },
+            { ticker: 'BTC', name: 'Bitcoin', role: 'Reserva Asimétrica', value: 35000, change: '+2.10%', color: '#f97316' },
+            { ticker: 'MCD', name: 'McDonald\'s', role: 'Consumo Defensivo', value: 30960, change: '+0.15%', color: '#10b981' },
+            { ticker: 'COCOSPPA', name: 'Cocos Pesos Plus', role: 'Liquidez Operativa', value: 24917, change: '+0.08%', color: '#64748b' }
+        ];
+
+        const totalValue = portfolioData.reduce((acc, item) => acc + item.value, 0);
+
+        // Renderizar Tabla
+        const tableBody = document.getElementById('assets-table-body');
+        portfolioData.forEach(item => {
+            const weight = ((item.value / totalValue) * 100).toFixed(2);
+            const isPositive = item.change.startsWith('+');
+            const changeColor = isPositive ? 'text-emerald-400' : 'text-rose-400';
+
+            tableBody.innerHTML += `
+                <tr class="hover:bg-slate-700/30">
+                    <td class="py-3 px-3 font-bold text-slate-100">${item.ticker}</td>
+                    <td class="py-3 px-3 text-xs text-slate-400">${item.role}</td>
+                    <td class="py-3 px-3 text-right font-medium">$${item.value.toLocaleString('es-AR')} ARS</td>
+                    <td class="py-3 px-3 text-right font-semibold text-blue-400">${weight}%</td>
+                    <td class="py-3 px-3 text-right text-xs font-semibold ${changeColor}">${item.change}</td>
+                </tr>
+            `;
+        });
+
+        // Renderizar Gráfico
+        const ctx = document.getElementById('portfolioChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: portfolioData.map(i => i.ticker),
+                datasets: [{
+                    data: portfolioData.map(i => i.value),
+                    backgroundColor: portfolioData.map(i => i.color),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                cutout: '70%'
+            }
+        });
+
+        // Navegación de Pestañas
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-blue-400');
+                btn.classList.add('border-transparent', 'text-slate-400');
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            const activeBtn = document.getElementById(`btn-${tabName}`);
+            activeBtn.classList.remove('border-transparent', 'text-slate-400');
+            activeBtn.classList.add('border-blue-500', 'text-blue-400');
+        }
+    </script>
+</body>
+</html>
